@@ -12,8 +12,9 @@ const CaptainLogin = () => {
 
     const {setCaptain}= useContext(CaptainDataContext);
     const navigate = useNavigate();
+
   
-    const submitHandler= async (e)=>{
+    const submitHandler = async (e)=>{
       e.preventDefault()
 
       const CaptainData={
@@ -22,7 +23,7 @@ const CaptainLogin = () => {
       }
 
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`,CaptainData)
-
+          
       if(response.status===200){
         const data = response.data
         setCaptain(data.captain)

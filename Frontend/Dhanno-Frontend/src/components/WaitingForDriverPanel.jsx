@@ -21,7 +21,7 @@ const WaitingForDriverPanel = (props) => {
                 <div className='w-full mt-2'>
                      <div className="flex items-center border-b-2 border-gray-200 mb-3 rounded-xl gap-5 p-3 transition-all">
                           <i className="text-lg ri-map-pin-user-fill"></i>
-                          <div className="">
+                          <div>
                                <h3 className="text-lg font-medium">562/11-A</h3>
                                <p className="text-sm -mt-1 text-gray-600">Ram Ganga Vihar,Phase 2, Moradabad</p>
                           </div>

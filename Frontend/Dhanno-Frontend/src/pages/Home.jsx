@@ -103,7 +103,7 @@ useGSAP(function(){
 },[waitingForDriverPanel])
   return (
     <div className="h-screen relative overflow-hidden">
-      <img className="w-30 m-5 absolute top-0 left-0 " src={logo} alt="logo" />
+      <img className="w-20 m-4 absolute top-0 left-0 " src={logo} alt="logo" />
 
       <div className="h-full w-screen">
         <img
