@@ -1,41 +1,22 @@
-import {useNavigate} from "react-router-dom"
-import { useEffect } from "react"
-import axios from "axios"
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { CaptainDataContext } from "../context/CaptainContext.jsx";
+import { api } from "../lib/api.js";
+import PageLoader from "../components/ui/PageLoader.jsx";
 
-const CaptainLogout = ()=>{
+const CaptainLogout = () => {
+  const navigate = useNavigate();
+  const { setCaptain } = useContext(CaptainDataContext);
 
-     const navigate = useNavigate()
+  useEffect(() => {
+    api.post("/captains/logout").finally(() => {
+      setCaptain(null);
+      navigate("/captain/login", { replace: true });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-     useEffect(()=>{
+  return <PageLoader label="Signing you out..." />;
+};
 
-     const logout = async() =>{
-
-          const token = localStorage.getItem("token");
-
-          try{
-          const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/profile`,{},{
-               headers:{
-                    Authorization:`Bearer ${token}`
-               }
-          })
-
-          if(response.status===200){
-               localStorage.removeItem("token")
-               navigate("/captain/login")
-          }
-     }
-     catch(err){
-     console.log(err)
-}
-}
-logout()  
-},[])
-
-     return(
-          <div>
-               Logging out...
-          </div>
-     )    
-}
-
-export default CaptainLogout
+export default CaptainLogout;

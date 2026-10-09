@@ -1,49 +1,60 @@
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { JWT_SECRET } from "../utils/config.js";
 
-const userSchema = new mongoose.Schema({
-     fullname:{
-          firstname:{
-               type: String,
-               required:true,
-               minlength:[3, 'First name must be atleast 3 characters long']
-          },
-          lastname:{
-               type:String,
-               minlength:[3, 'lastname must be atleast 3 characters long']
-          }
-     },
-     email:{
-          type:String,
-          required:true,
-          unique:true,
-          minlength:[5,'Email must be atleast 5 characters long']
-     },
-     password:{
-          type:String,
-          required:true,
-          select:false
-     },
-     socketId:{
-          type:String,
-     }
-})
+const userSchema = new mongoose.Schema(
+  {
+    fullname: {
+      firstname: {
+        type: String,
+        required: true,
+        minlength: [3, "First name must be atleast 3 characters long"],
+      },
+      lastname: {
+        type: String,
+        minlength: [3, "Last name must be atleast 3 characters long"],
+      },
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      minlength: [5, "Email must be atleast 5 characters long"],
+    },
+    password: { type: String, required: true, select: false },
+    socketId: { type: String },
+    wallet: {
+      balance: { type: Number, default: 0, min: 0 },
+    },
+  },
+  { timestamps: true },
+);
 
-userSchema.methods.generateAuthToken = function() {
-     const token = jwt.sign({_id:this._id}, process.env.JWT_SECRET, {expiresIn:'24h'});
-     return token;
-}
+userSchema.set("toJSON", {
+  transform: (_doc, ret) => {
+    delete ret.password;
+    delete ret.__v;
+    return ret;
+  },
+});
 
-userSchema.methods.comparePassword = async function(password){
-     return await bcrypt.compare(password, this.password)
-}
+userSchema.methods.generateAuthToken = function () {
+  return jwt.sign({ _id: this._id, role: "user" }, JWT_SECRET, {
+    expiresIn: "24h",
+  });
+};
 
-userSchema.statics.hashPassword = async function(password){
-     const salt = await bcrypt.genSalt(10);
-     return await bcrypt.hash(password, salt);
-}
+userSchema.methods.comparePassword = async function (password) {
+  return bcrypt.compare(password, this.password);
+};
 
-const userModel = mongoose.model('User', userSchema);
+userSchema.statics.hashPassword = async function (password) {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+};
 
+const userModel = mongoose.model("User", userSchema);
 export default userModel;

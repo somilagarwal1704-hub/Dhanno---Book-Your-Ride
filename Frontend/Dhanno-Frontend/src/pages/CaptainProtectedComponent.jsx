@@ -1,50 +1,34 @@
-import React, { useEffect } from 'react'
-import axios from "axios"
-import { useNavigate } from "react-router-dom"
-import { CaptainDataContext } from '../context/CaptainContext'
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { CaptainDataContext } from "../context/CaptainContext.jsx";
+import { api } from "../lib/api.js";
+import PageLoader from "../components/ui/PageLoader.jsx";
 
+/** Verifies the captain's session cookie before rendering children. */
 const CaptainProtectedComponent = ({ children }) => {
+  const navigate = useNavigate();
+  const { captain, setCaptain } = useContext(CaptainDataContext);
+  const [ready, setReady] = useState(Boolean(captain?._id));
 
-   const navigate = useNavigate()
-   const token = localStorage.getItem("token")
-
-   const { captain, setCaptain } = React.useContext(CaptainDataContext)
-
-   const [isLoading, setIsLoading] = React.useState(true)
-
-   useEffect(() => {
-
-      if (!token) {
-         navigate("/captain/login")
-         return
-      }
-
-      axios.get(`${import.meta.env.VITE_BASE_URL}/captains/profile`, {
-         headers: {
-            Authorization: `Bearer ${token}`
-         }
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get("/captains/profile")
+      .then(({ data }) => {
+        if (cancelled) return;
+        setCaptain(data.captain);
+        setReady(true);
       })
-         .then(response => {
+      .catch(() => {
+        if (!cancelled) navigate("/captain/login", { replace: true });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, setCaptain]);
 
-            if (response.status === 200) {
-               setCaptain(response.data.captain)
-               setIsLoading(false)
-            }
+  if (!ready) return <PageLoader label="Checking your session..." />;
+  return children;
+};
 
-         })
-         .catch(err => {
-            console.log(err)
-            localStorage.removeItem("token")
-            navigate("/captain/login")
-         })
-
-   }, [])
-
-   if (isLoading) {
-      return <div>Loading...</div>
-   }
-
-   return children
-}
-
-export default CaptainProtectedComponent
+export default CaptainProtectedComponent;

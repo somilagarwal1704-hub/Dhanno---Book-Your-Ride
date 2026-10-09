@@ -1,78 +1,74 @@
-import userModel from "../models/user.model.js";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import BlacklistedToken from "../models/blacklistToken.model.js";
+import userModel from "../models/user.model.js";
 import captainModel from "../models/captain.model.js";
+import BlacklistedToken from "../models/blacklistToken.model.js";
+import { AUTH_COOKIE } from "../utils/cookies.js";
+import { JWT_SECRET } from "../utils/config.js";
 
-export const authUser = async(req,res,next)=>{
-     const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+const bearer = (req) => req.headers.authorization?.split(" ")[1];
 
-     if(!token){
-          return res.status(401).json({
-               message:"Access Denied. No token provided."
-          })
-     }
+const isBlacklisted = (token) => BlacklistedToken.exists({ token });
 
-     const isBlackListed = await BlacklistedToken.findOne({token:token});
+/**
+ * Resolve the token for a role. Cookie first (browser sessions), then a
+ * Bearer header (API clients / tooling).
+ */
+const tokenFor = (req, role) => req.cookies?.[AUTH_COOKIE[role]] || bearer(req);
 
-     if(isBlackListed){
-          return res.status(401).json({
-               message:"Invalid token. Please login again."
-          })
-     }
-     try{
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          const user = await userModel.findById(decoded._id);
+const loadAccount = async (role, id) =>
+  role === "captain" ? captainModel.findById(id) : userModel.findById(id);
 
-          if(!user){
-               return res.status(401).json({
-                    message:"Access Denied. User not found."
-               })
-          }
-          req.user = user;
-           return next();
-     }catch(err){
-          console.log(err.message);
-          res.status(401).json({
-               message:"Invalid token."
-          })
-     }
-}
+/**
+ * Verify a token and load the matching account. Returns { role, doc } or null.
+ * `roles` lists which account types are acceptable for this check.
+ */
+const authenticate = async (token, roles) => {
+  if (!token) return { error: 401, message: "Access Denied. No token provided." };
+  if (await isBlacklisted(token)) {
+    return { error: 401, message: "Invalid token. Please login again." };
+  }
 
-export const authCaptain = async(req,res,next)=>{
-     const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
-     
-     if(!token){
-          return res.status(401).json({
-               message:"Access Denied. No token founf"
-          })
-     }
+  let decoded;
+  try {
+    decoded = jwt.verify(token, JWT_SECRET);
+  } catch (err) {
+    return { error: 401, message: "Invalid or expired token. Please login again." };
+  }
 
-     const BlackListedToken = await BlacklistedToken.findOne({token:token})
-     if(BlackListedToken){
-          return res.status(401).json({
-               message:"Invalid token. Please login again."
-          })
-     }
+  // Tokens issued before roles were embedded have no `role`; try each allowed role.
+  const candidates = decoded.role ? [decoded.role] : roles;
+  for (const role of candidates) {
+    if (!roles.includes(role)) continue;
+    const doc = await loadAccount(role, decoded._id);
+    if (doc) return { role, doc };
+  }
+  return { error: 401, message: "Access Denied. Account not found." };
+};
 
-     try{
-     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+const guard = (roles) => async (req, res, next) => {
+  try {
+    // Pick the cookie of the first acceptable role that is present.
+    const token =
+      roles.map((r) => req.cookies?.[AUTH_COOKIE[r]]).find(Boolean) ||
+      bearer(req);
 
-     const captain = await captainModel.findById(decoded._id);
+    const result = await authenticate(token, roles);
+    if (result.error) {
+      return res.status(result.error).json({ message: result.message });
+    }
 
-     if(!captain){
-          return res.status(401).json({
-               message:"Access Denied. Captain not found."
-          })
-     }
+    req.actor = { role: result.role, id: result.doc._id.toString(), doc: result.doc };
+    if (result.role === "user") req.user = result.doc;
+    if (result.role === "captain") req.captain = result.doc;
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+};
 
-    req.captain = captain;
-     return next();
-}catch(err){
-     console.log(err.message);
-     res.status(401).json({
-          message:"Invalid token."
-     })
+export const authUser = guard(["user"]);
+export const authCaptain = guard(["captain"]);
+/** Either a rider or a captain (used for shared ride endpoints). */
+export const authAny = guard(["user", "captain"]);
 
-}
-}
+export { tokenFor, isBlacklisted };

@@ -1,50 +1,23 @@
-import React, { useEffect } from 'react'
-import axios from 'axios'
-import { useNavigate } from "react-router-dom"
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { UserDataContext } from "../context/UserContext.jsx";
+import { api } from "../lib/api.js";
+import PageLoader from "../components/ui/PageLoader.jsx";
 
 const UserLogout = () => {
+  const navigate = useNavigate();
+  const { setUser } = useContext(UserDataContext);
 
-    const navigate = useNavigate()
+  useEffect(() => {
+    // The session lives in an HttpOnly cookie, so the server must clear it.
+    api.post("/users/logout").finally(() => {
+      setUser(null);
+      navigate("/user/login", { replace: true });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    useEffect(() => {
+  return <PageLoader label="Signing you out..." />;
+};
 
-        const logout = async () => {
-
-            const token = localStorage.getItem("token")
-
-            try {
-
-                const response = await axios.post(
-                    `${import.meta.env.VITE_BASE_URL}/users/logout`,
-                    {},
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                )
-
-                if (response.status === 200) {
-
-                    localStorage.removeItem("token")
-
-                    navigate("/user/login")
-                }
-
-            } catch (error) {
-                console.log(error)
-            }
-        }
-
-        logout()
-
-    }, [])
-
-    return (
-        <div>
-            Logging out...
-        </div>
-    )
-}
-
-export default UserLogout
+export default UserLogout;
