@@ -12,6 +12,9 @@ import { CLIENT_ORIGIN } from "./utils/config.js";
 
 const app = express();
 
+// Behind Render/Railway/Fly proxies, trust the first hop so rate limits see the real client IP.
+app.set("trust proxy", 1);
+
 connectToDb();
 
 // Credentialed CORS must name an explicit origin; a wildcard blocks cookies.
