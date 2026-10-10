@@ -7,7 +7,7 @@ import messageModel from "../models/message.model.js";
 import BlacklistedToken from "../models/blacklistToken.model.js";
 import { setIo } from "./realtime.js";
 import { AUTH_COOKIE, readCookie } from "../utils/cookies.js";
-import { CLIENT_ORIGIN, JWT_SECRET } from "../utils/config.js";
+import { CLIENT_ORIGINS, JWT_SECRET } from "../utils/config.js";
 import { isValidLatLng } from "../utils/geo.js";
 
 /**
@@ -39,7 +39,7 @@ const displayName = (doc) => doc?.fullname?.firstname ?? "Rider";
 
 const socketSetup = (server) => {
   const io = new Server(server, {
-    cors: { origin: CLIENT_ORIGIN, credentials: true },
+    cors: { origin: CLIENT_ORIGINS, credentials: true },
   });
   setIo(io);
 

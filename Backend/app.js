@@ -8,7 +8,7 @@ import rideRouter from "./routes/ride.routes.js";
 import transactionRouter from "./routes/transaction.routes.js";
 import mapsRoutes from "./routes/maps.routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
-import { CLIENT_ORIGIN } from "./utils/config.js";
+import { CLIENT_ORIGINS } from "./utils/config.js";
 
 const app = express();
 
@@ -18,7 +18,16 @@ app.set("trust proxy", 1);
 connectToDb();
 
 // Credentialed CORS must name an explicit origin; a wildcard blocks cookies.
-app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Requests without an Origin header (curl, server-to-server) are allowed.
+      if (!origin || CLIENT_ORIGINS.includes(origin.replace(/\/+$/, ""))) return callback(null, true);
+      return callback(null, false);
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
