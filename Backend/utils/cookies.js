@@ -11,7 +11,7 @@ export const cookieOptions = () => ({
   httpOnly: true,
   secure: IS_PROD,
   sameSite: IS_PROD ? "none" : "lax",
-  maxAge: 24 * 60 * 60 * 1000,
+  maxAge: 30 * 24 * 60 * 60 * 1000,
 });
 
 export const readCookie = (cookieHeader = "", name) => {

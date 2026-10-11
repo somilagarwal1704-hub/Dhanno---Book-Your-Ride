@@ -43,7 +43,7 @@ userSchema.set("toJSON", {
 
 userSchema.methods.generateAuthToken = function () {
   return jwt.sign({ _id: this._id, role: "user" }, JWT_SECRET, {
-    expiresIn: "24h",
+    expiresIn: "30d",
   });
 };
 

@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CaptainDataContext } from "../context/CaptainContext.jsx";
 import { api, errorMessage } from "../lib/api.js";
+import { saveToken, clearToken } from "../lib/session.js";
 import AuthLayout, { FormError } from "../components/ui/AuthLayout.jsx";
 import Field from "../components/ui/Field.jsx";
 import Button from "../components/ui/Button.jsx";
@@ -20,6 +21,7 @@ const CaptainLogin = () => {
     setError("");
     try {
       const { data } = await api.post("/captains/login", { email, password });
+      saveToken("captain", data.token);
       setCaptain(data.captain);
       navigate("/captain/home", { replace: true });
     } catch (err) {

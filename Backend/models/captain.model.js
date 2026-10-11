@@ -79,7 +79,7 @@ captainSchema.set("toJSON", {
 
 captainSchema.methods.generateAuthToken = function () {
   return jwt.sign({ _id: this._id, role: "captain" }, JWT_SECRET, {
-    expiresIn: "24h",
+    expiresIn: "30d",
   });
 };
 
