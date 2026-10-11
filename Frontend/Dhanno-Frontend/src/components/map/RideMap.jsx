@@ -86,7 +86,7 @@ const RideMap = ({
   const fitPoints = [pickup, destination, captainPos, userPos].filter(Boolean);
 
   return (
-    <div className={`relative isolate h-full w-full ${isDark ? "dh-map-dark" : ""} ${className}`}>
+    <div className={`relative isolate h-full w-full ${isDark ? "dh-map-dark" : "dh-map-light"} ${className}`}>
       <MapContainer
         center={defaultCenter}
         zoom={13}

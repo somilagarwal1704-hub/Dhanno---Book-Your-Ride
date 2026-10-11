@@ -137,25 +137,23 @@ const Riding = () => {
     const to = routeKey === "to-pickup" ? pickup : destination;
     if (!from || !to) return undefined;
     fetchRoute(from, to)
-      .then((r) => {
-        if (!cancelled) {
-          setRoute(r.coords);
-          setFitSignal((n) => n + 1);
-        }
-      })
+      .then((r) => !cancelled && setRoute(r.coords))
       .catch(() => !cancelled && setRoute([]));
     return () => {
       cancelled = true;
     };
-    // Recompute once per phase; live captain movement only moves the marker.
+    // Re-route when the phase changes, or when the captain has moved ~200 m.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeKey, rideId]);
+  }, [routeKey, rideId, routeKey === "to-pickup" ? captainGrid : ""]);
 
-  const etaMin = useMemo(() => {
+  const captainTrack = useMemo(() => {
     if (!captainPos || !ride || status !== "accepted") return null;
     const km = haversineKm([captainPos.lat, captainPos.lng], [ride.pickup.location.lat, ride.pickup.location.lng]);
-    return Math.max(1, Math.round((km / 25) * 60));
+    return { km, min: Math.max(1, Math.round((km / 25) * 60)) };
   }, [captainPos, ride, status]);
+
+  // Rounded to ~200 m, so the route refreshes when the captain has really moved, not on every GPS tick.
+  const captainGrid = captainPos ? `${Math.round(captainPos.lat * 500)}:${Math.round(captainPos.lng * 500)}` : "";
 
   const cancelRide = async () => {
     if (!window.confirm("Cancel this ride? Your captain will be notified.")) return;
@@ -265,9 +263,21 @@ const Riding = () => {
           <div className="space-y-5">
             <div className="text-center">
               <h2 className="text-xl font-bold text-ink">
-                {etaMin ? `${captainName} arrives in ~${etaMin} min` : `${captainName} is on the way`}
+                {captainTrack ? `${captainName} arrives in ~${captainTrack.min} min` : `${captainName} is on the way`}
               </h2>
-              <p className="mt-1 text-sm text-ink-2">Share this code with your captain to start the trip.</p>
+              <p className="mt-1 text-sm text-ink-2">
+                {captainTrack
+                  ? `${captainTrack.km < 1 ? `${Math.round(captainTrack.km * 1000)} m` : `${captainTrack.km.toFixed(1)} km`} away from your pickup · live`
+                  : "Waiting for your captain's live location..."}
+              </p>
+              <p className="mt-3 text-sm text-ink-2">Share this code with your captain to start the trip.</p>
+              <button
+                type="button"
+                onClick={() => setFitSignal((n) => n + 1)}
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-surface-2 px-4 py-2 text-sm font-semibold text-ink transition active:scale-95"
+              >
+                <i className="ri-map-pin-user-line" /> Track captain on map
+              </button>
             </div>
             {ride.otp && <OtpDigits otp={ride.otp} />}
             <DriverCard captain={ride.captain} unread={unread} onChat={() => setChatOpen(true)} />

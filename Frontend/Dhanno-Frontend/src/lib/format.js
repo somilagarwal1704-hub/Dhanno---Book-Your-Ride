@@ -41,17 +41,50 @@ export const VEHICLE_META = {
 export const formatDistance = (km) =>
   km < 1 ? `${Math.round(km * 1000)} m` : `${round2(km).toFixed(1)} km`;
 
-/** Road route between two [lat, lng] points via the OSRM demo server. */
+const OSRM_SERVERS = [
+  "https://router.project-osrm.org",
+  "https://routing.openstreetmap.de/routed-car",
+];
+
+const straightKm = (a, b) => {
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(b[0] - a[0]);
+  const dLng = toRad(b[1] - a[1]);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLng / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+};
+
+/**
+ * Road route between two [lat, lng] points. Tries two public OSRM servers.
+ * If both are unreachable, returns a straight line with an estimated road
+ * distance (about 1.3x the straight-line distance) so the map still shows a path.
+ */
 export const fetchRoute = async (from, to) => {
-  const url = `https://router.project-osrm.org/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson`;
-  const res = await fetch(url);
-  const data = await res.json();
-  if (data.code !== "Ok" || !data.routes?.length) throw new Error("No route found");
-  const r = data.routes[0];
+  for (const base of OSRM_SERVERS) {
+    try {
+      const url = `${base}/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data.code === "Ok" && data.routes?.length) {
+        const r = data.routes[0];
+        return {
+          coords: r.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
+          distanceKm: r.distance / 1000,
+          durationMin: Math.max(1, Math.ceil(r.duration / 60)),
+          approximate: false,
+        };
+      }
+    } catch {
+      // try the next server
+    }
+  }
+  const estKm = straightKm(from, to) * 1.3;
   return {
-    coords: r.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
-    distanceKm: r.distance / 1000,
-    durationMin: Math.max(1, Math.ceil(r.duration / 60)),
+    coords: [from, to],
+    distanceKm: estKm,
+    durationMin: Math.max(1, Math.ceil((estKm / 25) * 60)),
+    approximate: true,
   };
 };
 

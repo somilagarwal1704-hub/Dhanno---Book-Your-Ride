@@ -303,6 +303,10 @@ const Home = () => {
         />
       </div>
 
+      {/* Dark theme only: soft fades so the map edges blend into the app instead of looking black. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[5] hidden h-48 bg-gradient-to-b from-canvas/80 to-transparent dark:block" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] hidden h-56 bg-gradient-to-t from-canvas/70 to-transparent dark:block" />
+
       {/* Floating search card */}
       <AnimatePresence>
         {searchCardVisible && (
@@ -313,7 +317,7 @@ const Home = () => {
             exit={{ y: -24, opacity: 0 }}
             className="pointer-events-none absolute inset-x-0 top-0 z-20 p-4"
           >
-            <div className="pointer-events-auto mx-auto max-w-xl rounded-[1.5rem] border border-line bg-surface/95 p-4 shadow-card backdrop-blur-md">
+            <div className="pointer-events-auto mx-auto max-w-xl rounded-[1.5rem] border border-line bg-gradient-to-br from-surface-2/95 to-surface/95 p-4 shadow-card backdrop-blur-md">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <img src={logo} alt="Dhanno" className="h-9 w-auto dark:invert" />

@@ -92,7 +92,10 @@ body {
 /* ---------- Map ---------- */
 /* Dark map: invert the light OSM tiles and shift hue back so roads stay readable. */
 .dh-map-dark .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.95) saturate(0.8);
+  filter: invert(0.86) hue-rotate(190deg) brightness(1.02) contrast(0.9) saturate(0.7);
+}
+.dh-map-light .leaflet-tile-pane {
+  filter: saturate(0.85) brightness(1.02);
 }
 .leaflet-container { background: var(--canvas); font-family: var(--font-sans); }
 .leaflet-control-attribution {
