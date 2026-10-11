@@ -23,6 +23,8 @@ app.use(
     origin: (origin, callback) => {
       // Requests without an Origin header (curl, server-to-server) are allowed.
       if (!origin || CLIENT_ORIGINS.includes(origin.replace(/\/+$/, ""))) return callback(null, true);
+      // Logged so the exact origin can be compared with FRONTEND_URL in Render's logs.
+      console.warn(`CORS blocked origin: ${origin} (allowed: ${CLIENT_ORIGINS.join(", ")})`);
       return callback(null, false);
     },
     credentials: true,
