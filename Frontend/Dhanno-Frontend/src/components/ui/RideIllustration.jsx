@@ -42,11 +42,6 @@ const RideIllustration = () => (
       <rect x="174" y="98" width="24" height="7" rx="3" fill="#1a1400" />
     </g>
 
-    {/* price tag */}
-    <g transform="translate(206 186)">
-      <rect width="112" height="34" rx="17" fill="#f3f4f6" />
-      <text x="56" y="22" textAnchor="middle" fontFamily="Inter, system-ui, sans-serif" fontSize="14" fontWeight="700" fill="#0d1017">₹248 · 44 km</text>
-    </g>
   </svg>
 );
 

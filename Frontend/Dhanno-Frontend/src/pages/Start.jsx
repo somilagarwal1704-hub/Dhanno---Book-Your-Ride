@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import logo from "../assets/logo4.png";
 import RideIllustration from "../components/ui/RideIllustration.jsx";
+import { DARK_VARS } from "../lib/darkVars.js";
 
 const FEATURES = [
   { icon: "ri-route-line", title: "Live map", text: "Track your captain on the map in real time." },
@@ -11,7 +12,7 @@ const FEATURES = [
 ];
 
 const Start = () => (
-  <div className="theme-dark relative min-h-screen overflow-hidden bg-canvas text-ink">
+  <div className="relative min-h-screen overflow-hidden bg-canvas text-ink" style={{ ...DARK_VARS, backgroundColor: DARK_VARS["--canvas"] }}>
     {/* soft background glows so the page never looks like a flat black sheet */}
     <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-brand/15 blur-3xl" />
     <div className="pointer-events-none absolute -right-32 top-96 h-96 w-96 rounded-full bg-success/10 blur-3xl" />

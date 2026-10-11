@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import logo from "../../assets/logo4.png";
+import { DARK_VARS } from "../../lib/darkVars.js";
 
 const AuthLayout = ({ title, subtitle, children, footer, accent = "brand" }) => (
-  <div className="theme-dark relative min-h-screen bg-canvas text-ink">
+  <div className="relative min-h-screen bg-canvas text-ink" style={{ ...DARK_VARS, backgroundColor: DARK_VARS["--canvas"] }}>
     <div className={`pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b ${accent === "brand" ? "from-brand/20" : "from-success/20"} to-transparent`} />
     <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-6 pb-8 pt-6">
       <div className="flex items-center justify-between">
