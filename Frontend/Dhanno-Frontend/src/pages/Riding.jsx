@@ -129,6 +129,9 @@ const Riding = () => {
   const status = ride?.status;
 
   // Route: captain -> pickup while waiting, pickup -> destination on trip.
+  // Rounded to ~200 m, so the route refreshes when the captain has really moved, not on every GPS tick.
+  const captainGrid = captainPos ? `${Math.round(captainPos.lat * 500)}:${Math.round(captainPos.lng * 500)}` : "";
+
   const routeKey = status === "accepted" ? "to-pickup" : status === "in_progress" ? "trip" : "";
   useEffect(() => {
     if (!routeKey) return undefined;
@@ -152,8 +155,6 @@ const Riding = () => {
     return { km, min: Math.max(1, Math.round((km / 25) * 60)) };
   }, [captainPos, ride, status]);
 
-  // Rounded to ~200 m, so the route refreshes when the captain has really moved, not on every GPS tick.
-  const captainGrid = captainPos ? `${Math.round(captainPos.lat * 500)}:${Math.round(captainPos.lng * 500)}` : "";
 
   const cancelRide = async () => {
     if (!window.confirm("Cancel this ride? Your captain will be notified.")) return;

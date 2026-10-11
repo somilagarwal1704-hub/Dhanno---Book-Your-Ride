@@ -1,15 +1,15 @@
 import axios from "axios";
 import { HttpError } from "../middlewares/error.middleware.js";
- 
+
 const HEADERS = { "User-Agent": "DhannoRideApp/2.0 (contact: support@dhanno.app)" };
 const NOMINATIM = "https://nominatim.openstreetmap.org";
 const PHOTON = "https://photon.komoot.io/api";
 const COUNTRY_CODE = (process.env.SEARCH_COUNTRY_CODE || "IN").toUpperCase();
- 
+
 /** Build a readable "Moradabad, Uttar Pradesh, India" style label from Photon properties. */
 const photonLabel = (p) =>
   [...new Set([p.name, p.district, p.city, p.county, p.state, p.country].filter(Boolean))].join(", ");
- 
+
 /**
  * Typeahead search. Photon is built for autocomplete: "morada" matches
  * "Moradabad" as you type, and results are ranked by distance to the rider.
@@ -31,7 +31,7 @@ const searchPhoton = async (input, near) => {
     }))
     .filter((p) => p.displayName);
 };
- 
+
 /** Fallback: Nominatim (exact-match geocoder), restricted to the country. */
 const searchNominatim = async (input, near) => {
   const params = {
@@ -61,37 +61,55 @@ const searchNominatim = async (input, near) => {
       longitude: place.lon,
     }));
 };
- 
+
 export const getLocationSuggestions = async (input, near) => {
   if (!input || String(input).trim().length < 2) {
     throw new HttpError(400, "Location input is required");
   }
   const query = String(input).trim();
   const bias = near && Number.isFinite(near.lat) && Number.isFinite(near.lng) ? near : null;
- 
+
   try {
     const results = await searchPhoton(query, bias);
     if (results.length) return results;
   } catch {
     // Photon unavailable or rate-limited: fall through to Nominatim.
   }
- 
+
   try {
     return await searchNominatim(query, bias);
   } catch {
     throw new HttpError(502, "Unable to fetch location suggestions");
   }
 };
- 
+
+/** Turn coordinates into a readable place name. Photon first, then Nominatim. */
 export const reverseGeocode = async (lat, lng) => {
+  const fallback = { displayName: `${lat.toFixed(5)}, ${lng.toFixed(5)}` };
+  try {
+    const { data } = await axios.get(`${PHOTON}/reverse`, {
+      params: { lat, lon: lng, lang: "en" },
+      headers: HEADERS,
+      timeout: 6000,
+    });
+    const props = data.features?.[0]?.properties;
+    if (props) {
+      const parts = [props.name, props.street, props.district || props.locality, props.city, props.state]
+        .filter(Boolean);
+      const label = [...new Set(parts)].slice(0, 4).join(", ");
+      if (label) return { displayName: label };
+    }
+  } catch {
+    // fall through to Nominatim
+  }
   try {
     const { data } = await axios.get(`${NOMINATIM}/reverse`, {
-      params: { lat, lon: lng, format: "json", zoom: 18 },
+      params: { lat, lon: lng, format: "json", zoom: 18, "accept-language": "en" },
       headers: HEADERS,
       timeout: 8000,
     });
-    return { displayName: data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}` };
+    return { displayName: data.display_name || fallback.displayName };
   } catch {
-    return { displayName: `${lat.toFixed(5)}, ${lng.toFixed(5)}` };
+    return fallback;
   }
 };

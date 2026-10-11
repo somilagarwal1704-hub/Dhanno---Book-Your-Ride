@@ -11,7 +11,6 @@ import VehiclePicker from "../components/rider/VehiclePicker.jsx";
 import BookingConfirm from "../components/rider/BookingConfirm.jsx";
 import Searching from "../components/rider/Searching.jsx";
 import Sheet from "../components/ui/Sheet.jsx";
-import logo from "../assets/logo4.png";
 
 const NEARBY_POLL_MS = 8000;
 
@@ -320,7 +319,7 @@ const Home = () => {
             <div className="pointer-events-auto mx-auto max-w-xl rounded-[1.5rem] border border-line bg-gradient-to-br from-surface-2/95 to-surface/95 p-4 shadow-card backdrop-blur-md">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <img src={logo} alt="Dhanno" className="h-9 w-auto dark:invert" />
+                  <span className="text-lg font-extrabold tracking-tight text-ink">Dhanno<span className="text-brand">.</span></span>
                   {headerText && <span className="text-sm font-semibold text-ink-2">{headerText}</span>}
                 </div>
                 <div className="flex items-center gap-2">
@@ -403,13 +402,32 @@ const Home = () => {
 
       {/* Bottom sheets, one per step */}
       <Sheet open={step === "search" && !focused} label="Find a ride">
-        <div className="pb-2 text-center">
-          <h2 className="text-lg font-bold text-ink">Where to today?</h2>
-          <p className="mt-1 text-sm text-ink-2">
-            {nearbyCount > 0
-              ? `${nearbyCount} captain${nearbyCount > 1 ? "s" : ""} nearby right now`
-              : "Set a pickup and destination to see fares."}
-          </p>
+        <div className="pb-2">
+          <div className="flex items-center gap-4 rounded-2xl bg-gradient-to-r from-brand/30 via-brand/10 to-transparent p-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand text-brand-ink shadow-card">
+              <i className="ri-taxi-fill text-2xl" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-ink">Where to today?</h2>
+              <p className="text-sm text-ink-2">
+                {nearbyCount > 0
+                  ? `${nearbyCount} captain${nearbyCount > 1 ? "s" : ""} nearby right now`
+                  : "Set a pickup and destination to see fares."}
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-medium text-ink-2">
+            {[
+              ["ri-shield-check-line", "Safe rides"],
+              ["ri-chat-3-line", "In-ride chat"],
+              ["ri-wallet-3-line", "Wallet pay"],
+            ].map(([icon, label]) => (
+              <div key={label} className="rounded-xl border border-line bg-surface-2 py-3">
+                <i className={`${icon} block text-lg text-brand-strong`} />
+                <span className="mt-1 block">{label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </Sheet>
 
