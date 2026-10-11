@@ -7,37 +7,37 @@
   --canvas: #f3f4f7;
   --surface: #ffffff;
   --surface-2: #f0f2f6;
-  --surface-3: #e5e8ef;
+  --surface-3: #e2e6ee;
   --ink: #0e1116;
-  --ink-2: #5b6372;
-  --ink-3: #9aa2b1;
-  --line: #e2e5ec;
+  --ink-2: #4b5263;
+  --ink-3: #6b7280;
+  --line: #dfe3ea;
   --brand: #f5b301;
-  --brand-strong: #dc9a00;
+  --brand-strong: #a86b00;
   --brand-ink: #1b1400;
-  --success: #15a34a;
-  --danger: #e5484d;
-  --info: #2563eb;
+  --success: #15803d;
+  --danger: #dc2626;
+  --info: #1d4ed8;
   --shadow: 0 10px 30px -12px rgb(15 17 22 / 0.25);
   color-scheme: light;
 }
 
 .dark {
-  --canvas: #07080b;
-  --surface: #12141a;
-  --surface-2: #1a1d25;
-  --surface-3: #242833;
+  --canvas: #0d1017;
+  --surface: #161a23;
+  --surface-2: #1d222d;
+  --surface-3: #283040;
   --ink: #f3f4f6;
-  --ink-2: #a3aab8;
-  --ink-3: #6b7280;
-  --line: #262a34;
+  --ink-2: #b4bbc8;
+  --ink-3: #8b93a3;
+  --line: #2b3140;
   --brand: #facc15;
-  --brand-strong: #eab308;
+  --brand-strong: #fbbf24;
   --brand-ink: #1a1400;
   --success: #22c55e;
   --danger: #f87171;
   --info: #60a5fa;
-  --shadow: 0 10px 40px -12px rgb(0 0 0 / 0.6);
+  --shadow: 0 12px 40px -14px rgb(0 0 0 / 0.7);
   color-scheme: dark;
 }
 
@@ -72,18 +72,21 @@ body {
 
 /* Pages that always use the dark palette (landing, login, signup). */
 .theme-dark {
-  --canvas: #07080b;
-  --surface: #12141a;
-  --surface-2: #1a1d25;
-  --surface-3: #242833;
+  --canvas: #0d1017;
+  --surface: #161a23;
+  --surface-2: #1d222d;
+  --surface-3: #283040;
   --ink: #f3f4f6;
-  --ink-2: #a3aab8;
-  --ink-3: #6b7280;
-  --line: #262a34;
+  --ink-2: #b4bbc8;
+  --ink-3: #8b93a3;
+  --line: #2b3140;
   --brand: #facc15;
-  --brand-strong: #eab308;
+  --brand-strong: #fbbf24;
   --brand-ink: #1a1400;
   color-scheme: dark;
+  --success: #22c55e;
+  --danger: #f87171;
+  --info: #60a5fa;
 }
 
 /* ---------- Map ---------- */

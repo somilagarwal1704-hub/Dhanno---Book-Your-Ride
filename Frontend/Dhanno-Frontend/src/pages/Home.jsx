@@ -316,7 +316,7 @@ const Home = () => {
             <div className="pointer-events-auto mx-auto max-w-xl rounded-[1.5rem] border border-line bg-surface/95 p-4 shadow-card backdrop-blur-md">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <img src={logo} alt="Dhanno" className="h-9 w-auto" />
+                  <img src={logo} alt="Dhanno" className="h-9 w-auto dark:invert" />
                   {headerText && <span className="text-sm font-semibold text-ink-2">{headerText}</span>}
                 </div>
                 <div className="flex items-center gap-2">

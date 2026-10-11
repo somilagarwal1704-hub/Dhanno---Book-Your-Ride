@@ -7,7 +7,7 @@ const AuthLayout = ({ title, subtitle, children, footer, accent = "brand" }) => 
     <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-6 pb-8 pt-6">
       <div className="flex items-center justify-between">
         <Link to="/" aria-label="Dhanno home">
-          <img src={logo} alt="Dhanno" className="h-10 w-auto" />
+          <img src={logo} alt="Dhanno" className="h-10 w-auto brightness-0 invert" />
         </Link>
       </div>
 
