@@ -222,6 +222,8 @@ const Riding = () => {
         route={mapRoute}
         fitSignal={fitSignal}
         focus={focus}
+        routeColor={status === "accepted" ? "#22c55e" : "#f5b301"}
+        bottomInset={Math.round(window.innerHeight * 0.55)}
       />
 
       <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-3 p-4">
@@ -263,7 +265,7 @@ const Riding = () => {
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 34 }}
-        className="absolute inset-x-0 bottom-0 z-10 max-h-[62%] overflow-y-auto rounded-t-[1.75rem] border-t border-line bg-surface px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-card dh-no-scrollbar"
+        className="absolute inset-x-0 bottom-0 z-10 max-h-[55%] overflow-y-auto rounded-t-[1.75rem] border-t border-line bg-surface px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-card dh-no-scrollbar"
       >
         <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-surface-3" />
 

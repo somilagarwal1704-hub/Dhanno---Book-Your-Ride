@@ -36,7 +36,7 @@ const makeIcons = () => ({
  *  - `signal` changes (an explicit request such as "Track captain" or a ride state change).
  * Live GPS updates move the markers but never reset the user's zoom or position.
  */
-const FitView = ({ points, signal }) => {
+const FitView = ({ points, signal, bottomInset = 0 }) => {
   const map = useMap();
   const lastSignal = useRef(null);
   const fitted = useRef(false);
@@ -54,15 +54,17 @@ const FitView = ({ points, signal }) => {
       map.flyTo(valid[0], 15, { duration: 0.9 });
       return;
     }
+    // Leave room at the bottom for the trip sheet so the route isn't hidden behind it.
     map.fitBounds(L.latLngBounds(valid), {
-      padding: [70, 70],
+      paddingTopLeft: [50, 60],
+      paddingBottomRight: [50, bottomInset + 40],
       maxZoom: 16,
       animate: true,
       duration: 0.8,
     });
     // `valid` is read from the render that changed `signal` or first gained points.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signal, hasPoints, map]);
+  }, [signal, hasPoints, map, bottomInset]);
   return null;
 };
 
@@ -91,6 +93,8 @@ const RideMap = ({
   nearby = [],
   fitSignal = 0,
   focus = null,
+  routeColor = "#f5b301",
+  bottomInset = 0,
   className = "",
   defaultCenter = [28.6139, 77.209],
 }) => {
@@ -111,12 +115,12 @@ const RideMap = ({
       >
         <TileLayer url={TILE_URL} attribution={ATTRIBUTION} maxZoom={19} />
         <Resizer />
-        <FitView points={focus?.length ? focus : fitPoints} signal={fitSignal} />
+        <FitView points={focus?.length ? focus : fitPoints} signal={fitSignal} bottomInset={bottomInset} />
 
         {route.length > 1 && (
           <>
-            <Polyline positions={route} pathOptions={{ color: "#f5b301", weight: 10, opacity: 0.25, className: "dh-route-glow" }} />
-            <Polyline positions={route} pathOptions={{ color: "#f5b301", weight: 4, className: "dh-route" }} />
+            <Polyline positions={route} pathOptions={{ color: routeColor, weight: 10, opacity: 0.25, className: "dh-route-glow" }} />
+            <Polyline positions={route} pathOptions={{ color: routeColor, weight: 4, className: "dh-route" }} />
           </>
         )}
 
