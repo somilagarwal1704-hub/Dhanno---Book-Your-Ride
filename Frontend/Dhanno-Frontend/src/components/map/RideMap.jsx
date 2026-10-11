@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useTheme } from "../../context/ThemeContext.jsx";
@@ -30,14 +30,26 @@ const makeIcons = () => ({
     }),
 });
 
-/** Keeps every relevant point in view, animating when the set of points changes. */
+/**
+ * Fits the map to the given points only when:
+ *  - the first set of points appears, or
+ *  - `signal` changes (an explicit request such as "Track captain" or a ride state change).
+ * Live GPS updates move the markers but never reset the user's zoom or position.
+ */
 const FitView = ({ points, signal }) => {
   const map = useMap();
-  const key = JSON.stringify(points) + signal;
+  const lastSignal = useRef(null);
+  const fitted = useRef(false);
+  const valid = points.filter(Boolean);
+  const hasPoints = valid.length > 0;
 
   useEffect(() => {
-    const valid = points.filter(Boolean);
-    if (!valid.length) return;
+    if (!hasPoints) return;
+    const explicit = lastSignal.current !== signal;
+    if (fitted.current && !explicit) return;
+    lastSignal.current = signal;
+    fitted.current = true;
+
     if (valid.length === 1) {
       map.flyTo(valid[0], 15, { duration: 0.9 });
       return;
@@ -48,8 +60,9 @@ const FitView = ({ points, signal }) => {
       animate: true,
       duration: 0.8,
     });
+    // `valid` is read from the render that changed `signal` or first gained points.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, map]);
+  }, [signal, hasPoints, map]);
   return null;
 };
 
@@ -77,6 +90,7 @@ const RideMap = ({
   route = [],
   nearby = [],
   fitSignal = 0,
+  focus = null,
   className = "",
   defaultCenter = [28.6139, 77.209],
 }) => {
@@ -97,7 +111,7 @@ const RideMap = ({
       >
         <TileLayer url={TILE_URL} attribution={ATTRIBUTION} maxZoom={19} />
         <Resizer />
-        <FitView points={fitPoints} signal={fitSignal} />
+        <FitView points={focus?.length ? focus : fitPoints} signal={fitSignal} />
 
         {route.length > 1 && (
           <>

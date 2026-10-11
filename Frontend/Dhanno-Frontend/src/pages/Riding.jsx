@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { api, errorMessage } from "../lib/api.js";
 import { createSocket } from "../lib/socket.js";
-import { fetchRoute, formatTime, inr, VEHICLE_META, formatDistance } from "../lib/format.js";
+import { fetchRoute, formatTime, inr, VEHICLE_META, formatDistance, directionsUrl } from "../lib/format.js";
 import RideMap, { RecenterButton } from "../components/map/RideMap.jsx";
 import DriverCard from "../components/rider/DriverCard.jsx";
 import ChatPanel from "../components/chat/ChatPanel.jsx";
@@ -44,6 +44,7 @@ const Riding = () => {
   const [captainPos, setCaptainPos] = useState(null);
   const [route, setRoute] = useState([]);
   const [fitSignal, setFitSignal] = useState(0);
+  const [focus, setFocus] = useState(null); // e.g. [captain, pickup] when "Track captain" is pressed
   const [loadError, setLoadError] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -108,7 +109,7 @@ const Riding = () => {
       setNotice(p.message);
     });
     s.on("captain:location", (p) => {
-      if (String(p.rideId) === String(rideId)) setCaptainPos({ lat: p.lat, lng: p.lng });
+      if (String(p.rideId) === String(rideId)) setCaptainPos({ lat: p.lat, lng: p.lng, at: p.at });
     });
 
     return () => {
@@ -220,6 +221,7 @@ const Riding = () => {
         captain={captainPos && ride.captain ? { ...captainPos, vehicleType: ride.captain.vehicle?.vehicleType } : null}
         route={mapRoute}
         fitSignal={fitSignal}
+        focus={focus}
       />
 
       <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-3 p-4">
@@ -233,7 +235,12 @@ const Riding = () => {
       </header>
 
       <div className="absolute right-4 top-[38%] z-10">
-        <RecenterButton onClick={() => setFitSignal((n) => n + 1)} />
+        <RecenterButton
+          onClick={() => {
+            setFocus(null);
+            setFitSignal((n) => n + 1);
+          }}
+        />
       </div>
 
       <AnimatePresence>
@@ -268,13 +275,19 @@ const Riding = () => {
               </h2>
               <p className="mt-1 text-sm text-ink-2">
                 {captainTrack
-                  ? `${captainTrack.km < 1 ? `${Math.round(captainTrack.km * 1000)} m` : `${captainTrack.km.toFixed(1)} km`} away from your pickup · live`
-                  : "Waiting for your captain's live location..."}
+                  ? `${captainTrack.km < 1 ? `${Math.round(captainTrack.km * 1000)} m` : `${captainTrack.km.toFixed(1)} km`} away from your pickup`
+                  : "Captain's live location not received yet. Ask your captain to keep the app open."}
               </p>
+              {captainPos?.at && (
+                <p className="mt-1 text-xs text-success">Live · updated {formatTime(captainPos.at)}</p>
+              )}
               <p className="mt-3 text-sm text-ink-2">Share this code with your captain to start the trip.</p>
               <button
                 type="button"
-                onClick={() => setFitSignal((n) => n + 1)}
+                onClick={() => {
+                  setFocus(captainPos && pickup ? [[captainPos.lat, captainPos.lng], pickup] : null);
+                  setFitSignal((n) => n + 1);
+                }}
                 className="mt-3 inline-flex items-center gap-2 rounded-full bg-surface-2 px-4 py-2 text-sm font-semibold text-ink transition active:scale-95"
               >
                 <i className="ri-map-pin-user-line" /> Track captain on map
@@ -303,6 +316,16 @@ const Riding = () => {
               </p>
             </div>
             <DriverCard captain={ride.captain} unread={unread} onChat={() => setChatOpen(true)} />
+            {destination && (
+              <a
+                href={directionsUrl(destination[0], destination[1])}
+                target="_blank"
+                rel="noreferrer"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand py-3.5 font-bold text-brand-ink transition active:scale-[0.98]"
+              >
+                <i className="ri-navigation-line" /> Navigate to destination
+              </a>
+            )}
             <button type="button" onClick={shareTrip} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-surface-2 py-3.5 font-semibold text-ink transition active:scale-[0.98]">
               <i className="ri-share-forward-line" /> Share trip details
             </button>
